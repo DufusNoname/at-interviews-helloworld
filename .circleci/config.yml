@@ -33,7 +33,7 @@ jobs:
           command: "ls"
       - run:
           name: "Run local-deploy.sh"
-          command: "./local-deploy.sh"
+          command: "bash local-deploy.sh"
 
 
   say-hello:

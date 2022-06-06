@@ -22,6 +22,9 @@ jobs:
           aws-region: AWS_Region 
           aws-secret-access-key: AWS_SecretAccessKey
           profile-name: AWS_ProfileName
+      - run:
+          name: "Run local-deploy.sh"
+          command: "bash local-deploy.sh"
           
   does-this-work:
     docker:
@@ -54,4 +57,4 @@ jobs:
 workflows:
   deployment-workflow:
     jobs:
-      - does-this-work
+      - deploy-system

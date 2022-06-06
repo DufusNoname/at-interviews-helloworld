@@ -29,7 +29,7 @@ jobs:
       # Not sure what files exist after setup
       - run:
           name: "List local files"
-          command: "ls" 
+          command: "ls -a" 
 
       # Run the local-deploy script
       - run:

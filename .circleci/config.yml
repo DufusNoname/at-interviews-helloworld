@@ -22,6 +22,16 @@ jobs:
           aws-region: AWS_Region 
           aws-secret-access-key: AWS_SecretAccessKey
           profile-name: AWS_ProfileName
+          
+  does-this-work:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: "Run local-deploy.sh"
+          command: "local-deploy.sh"
+
 
   say-hello:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
@@ -41,4 +51,4 @@ jobs:
 workflows:
   deployment-workflow:
     jobs:
-      - deploy-system
+      - does-this-work

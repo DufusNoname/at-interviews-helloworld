@@ -26,6 +26,12 @@ jobs:
           aws-secret-access-key: AWS_SecretAccessKey
           profile-name: AWS_ProfileName
       
+      # Verify AWS API Access
+      - run:
+          name: "Verify AWS Access"
+          command: "aws --profile at-interviews \
+                    sts get-caller-identity"
+
       # Not sure what files exist after setup
       - run:
           name: "List local files"

@@ -29,7 +29,7 @@ jobs:
       # Verify AWS API Access
       - run:
           name: "Verify AWS Access"
-          command: "aws --profile at-interviews \
+          command: "aws --profile ${AWS_ProfileName} \
                     sts get-caller-identity"
 
       # Not sure what files exist after setup

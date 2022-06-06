@@ -30,6 +30,9 @@ jobs:
       - checkout
       - run:
           name: "Run local-deploy.sh"
+          command: "ls"
+      - run:
+          name: "Run local-deploy.sh"
           command: "local-deploy.sh"
 
 

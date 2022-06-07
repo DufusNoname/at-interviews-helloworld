@@ -25,12 +25,6 @@ jobs:
           aws-region: AWS_Region 
           aws-secret-access-key: AWS_SecretAccessKey
           profile-name: AWS_ProfileName
-      
-      # Verify AWS API Access
-      - run:
-          name: "Verify AWS Access"
-          command: "aws --profile chris.page \
-                    sts get-caller-identity"
 
       # Not sure what files exist after setup
       - run:

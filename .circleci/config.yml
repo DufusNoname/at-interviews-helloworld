@@ -10,8 +10,28 @@ jobs:
   deploy-system:
     docker:
       - image: cimg/base:stable
+    
+    # Parameters default to the dev/CICD set, but can be overridden for specific branches like prod
+    parameters:
+      accesskey:
+        type: string
+        default: AWS_AccessKeyId
+      region:
+        type: string
+        default: AWS_Region
+      secretaccesskey:
+        type: string
+        default: AWS_SecretAccessKey
+      profilename:
+        type: string
+        default: at-interviews
+
     steps:
       - checkout
+
+      - run:
+          name: "Branch"
+          command: "echo My branch is $CIRCLE_BRANCH"
 
       # Installing pre-req software if not already present
       - docker/install-docker
@@ -21,10 +41,10 @@ jobs:
 
       # AWS Setup, sensative data stored in private environment variables
       - aws-cli/setup:
-          aws-access-key-id: AWS_AccessKeyId 
-          aws-region: AWS_Region 
-          aws-secret-access-key: AWS_SecretAccessKey
-          profile-name: at-interviews 
+          aws-access-key-id: << parameters.accesskey >>
+          aws-region: << parameters.region >> 
+          aws-secret-access-key: << parameters.secretaccesskey >>
+          profile-name: << parameters.profilename >> 
 
       # Initialize docker instance
       - setup_remote_docker
@@ -54,6 +74,26 @@ jobs:
                     describe ingress helloworld"
 
 workflows:
-  deployment-workflow:
+
+  # This workflow will run for any branch except prod
+  cicd-deployment-workflow:
+    when:
+      and:
+        - not:
+            equal: [ prod, << pipeline.git.branch >> ]
     jobs:
       - deploy-system
+  
+  # This workflow will only run for the prod branch
+  prod-deployment-workflow:
+    when:
+      and:
+        - equal: [ prod, << pipeline.git.branch >> ]
+    jobs:
+      - deploy-system:
+          # "Custom" values for the prod branch deployment.
+          # These are the same values as the dev/cicd deployment because I don't have two environments to use.
+          accesskey: AWS_AccessKeyId
+          region: AWS_Region
+          secretaccesskey: AWS_SecretAccessKey
+          profilename: at-interviews

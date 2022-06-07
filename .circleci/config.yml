@@ -21,10 +21,11 @@ jobs:
 
       # AWS Setup, sensative data stored in private environment variables
       - aws-cli/setup:
-          aws-access-key-id: AWS_AccessKeyId
+          aws-access-key-id: AWS_AccessKeyId 
           aws-region: AWS_Region 
           aws-secret-access-key: AWS_SecretAccessKey
-          profile-name: AWS_ProfileName
+          profile-name: at-interviews 
+          role-arn: arn:aws:iam::310228935478:user/chris.page
 
       # Not sure what files exist after setup
       - run:

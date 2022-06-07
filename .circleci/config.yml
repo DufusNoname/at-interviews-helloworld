@@ -38,6 +38,20 @@ jobs:
       - run:
           name: "Run local-deploy.sh"
           command: "bash local-deploy.sh"
+      
+      # Get web ingress name
+      - run:
+          name: "Get ingress name"
+          command: "kubectl \
+                    --namespace circleci \
+                    get ingress"
+      
+      # Get web URL
+      - run:
+          name: "Get web URL"
+          command: "kubectl \
+                    --namespace circleci \
+                    describe ingress helloworld"
 
 workflows:
   deployment-workflow:

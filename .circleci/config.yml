@@ -1,0 +1,99 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@2.0.3
+  docker: circleci/docker@2.1.1
+  helm: circleci/helm@2.0.1
+  kubernetes: circleci/kubernetes@1.3.0
+  
+jobs:
+  deploy-system:
+    docker:
+      - image: cimg/base:stable
+    
+    # Parameters default to the dev/CICD set, but can be overridden for specific branches like prod
+    parameters:
+      accesskey:
+        type: string
+        default: AWS_AccessKeyId
+      region:
+        type: string
+        default: AWS_Region
+      secretaccesskey:
+        type: string
+        default: AWS_SecretAccessKey
+      profilename:
+        type: string
+        default: at-interviews
+
+    steps:
+      - checkout
+
+      - run:
+          name: "Branch"
+          command: "echo My branch is $CIRCLE_BRANCH"
+
+      # Installing pre-req software if not already present
+      - docker/install-docker
+      - aws-cli/install
+      - kubernetes/install-kubectl
+      - helm/install-helm-client
+
+      # AWS Setup, sensative data stored in private environment variables
+      - aws-cli/setup:
+          aws-access-key-id: << parameters.accesskey >>
+          aws-region: << parameters.region >> 
+          aws-secret-access-key: << parameters.secretaccesskey >>
+          profile-name: << parameters.profilename >> 
+
+      # Initialize docker instance
+      - setup_remote_docker
+
+      # Listing what files/folders exist after setup
+      - run:
+          name: "List local files"
+          command: "ls -a"
+
+      # Run the local-deploy script
+      - run:
+          name: "Run local-deploy.sh"
+          command: "bash local-deploy.sh"
+      
+      # Get web ingress name
+      - run:
+          name: "Get ingress name"
+          command: "kubectl \
+                    --namespace circleci \
+                    get ingress"
+      
+      # Get web URL
+      - run:
+          name: "Get web URL"
+          command: "kubectl \
+                    --namespace circleci \
+                    describe ingress helloworld"
+
+workflows:
+
+  # This workflow will run for any branch except prod
+  cicd-deployment-workflow:
+    when:
+      and:
+        - not:
+            equal: [ prod, << pipeline.git.branch >> ]
+    jobs:
+      - deploy-system
+  
+  # This workflow will only run for the prod branch
+  prod-deployment-workflow:
+    when:
+      and:
+        - equal: [ prod, << pipeline.git.branch >> ]
+    jobs:
+      - deploy-system:
+          # "Custom" values for the prod branch deployment.
+          # These are the same values as the dev/cicd deployment because I don't have two environments to use.
+          accesskey: AWS_AccessKeyId
+          region: AWS_Region
+          secretaccesskey: AWS_SecretAccessKey
+          profilename: at-interviews

@@ -1,6 +1,8 @@
 #!/bin/bash
 set -eo pipefail
 
+echo "Script Start"
+
 # You can pick a unique single-word namespace by passing it as an argument
 # to this script, or it'll try to make one for you from your local
 # machine's username
@@ -15,6 +17,9 @@ CURRENT_AWS_TARGET=$(aws --profile at-interviews \
     | awk -F: '{print $2}' \
     | tr -d \"\,\ \
     )
+
+echo "AWS_Account is: $AWS_ACCOUNT"
+echo "CURRENT_AWS_TARGET is: $CURRENT_AWS_TARGET"
 
 if [[ ! "$CURRENT_AWS_TARGET" = "$AWS_ACCOUNT" ]]; then
     echo "We don't appear to be authenticating to the Alltrails AWS account"
@@ -45,8 +50,12 @@ else
     NAMESPACE=$1
 fi
 
+echo "Namespace is: $NAMESPACE"
+
 export COMMIT_ID=$(git rev-parse --verify --short HEAD)
 echo commit ID is $COMMIT_ID
+
+echo "Updating local .kube config"
 
 # This updates your local ~/.kube/config file with authentication info
 # for our test EKS cluster
@@ -55,9 +64,13 @@ aws eks update-kubeconfig \
     --region us-west-2 \
     --name at-interviews-cluster
 
+echo "Updating local kubectl context"
+
 kubectl config \
     use-context \
     arn:aws:eks:us-west-2:310228935478:cluster/at-interviews-cluster
+
+echo "Logging into the ECR"
 
 # Then we log in to the Elastic Container Registry (ECR) so we have an 
 # AWS-accessible place to push the Docker container we're about to build...
@@ -69,6 +82,8 @@ aws ecr get-login-password \
     --password-stdin \
     $AWS_ACCOUNT.dkr.ecr.us-west-2.amazonaws.com
 
+echo "Building container"
+
 # Container gets built at this step.  Those tags are needed so the following
 # 'docker push' step sends the container to the right ECR repo
 docker build \
@@ -78,10 +93,14 @@ docker build \
     -t $AWS_ACCOUNT.dkr.ecr.us-west-2.amazonaws.com/helloworld:$COMMIT_ID \
     .
 
+echo "Pushing container to ECR"
+
 # If we've tagged our container appropriately above, this should send the 
 # container to ECR, where Kubernetes/Helm can pull it down
 docker push \
     $AWS_ACCOUNT.dkr.ecr.us-west-2.amazonaws.com/helloworld:$COMMIT_ID
+
+echo "Deploying container"
 
 # This connects to Kubernetes (EKS) and tells it to deploy the above container
 # It also has a bunch of niceties in there around setting up an ALB (so we can

@@ -25,12 +25,14 @@ jobs:
           aws-region: AWS_Region 
           aws-secret-access-key: AWS_SecretAccessKey
           profile-name: at-interviews 
-          #role-arn: arn:aws:iam::310228935478:user/chris.page
+
+      # Initialize docker instance
+      - setup_remote_docker
 
       # Listing what files/folders exist after setup
       - run:
           name: "List local files"
-          command: "ls -a" 
+          command: "ls -a"
 
       # Run the local-deploy script
       - run:

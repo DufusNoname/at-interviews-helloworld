@@ -27,7 +27,7 @@ jobs:
           profile-name: at-interviews 
           role-arn: arn:aws:iam::310228935478:user/chris.page
 
-      # Not sure what files exist after setup
+      # Listing what files/folders exist after setup
       - run:
           name: "List local files"
           command: "ls -a" 
